@@ -19,17 +19,35 @@ import * as THREE from 'three';
 			// Load GLB model
             const loader = new GLTFLoader();
             loader.load('jsm/objects/engine.glb', function (gltf) {
-                model = gltf.scene;
-                scene.add(model);
-                model.position.set(0, 0, 0);
-            }, undefined, function (error) {
-                console.error('Error loading GLB file:', error);
-            });
+				model = gltf.scene;
+				scene.add(model);
+				model.position.set(0, 0, 0);
+			
+				model.traverse(function (child) {
+					if (child.isMesh) {
+						child.castShadow = true; // Allows object to cast shadows
+						child.receiveShadow = true; // Allows object to receive shadows
+					}
+				});
+			}, undefined, function (error) {
+				console.error('Error loading GLB file:', error);
+			});
+			
 
         
 			// Three-point lighting setup
-			const keyLight = new THREE.DirectionalLight(0xffffff, 1);
-			keyLight.position.set(5, 5, 5);
+			const keyLight = new THREE.DirectionalLight(0xffffff, 3);
+			keyLight.position.set(5, 10, 5);
+			keyLight.castShadow = true;
+			keyLight.shadow.mapSize.width = 4096;
+			keyLight.shadow.mapSize.height = 4096;
+			keyLight.shadow.camera.left = -20;
+			keyLight.shadow.camera.right = 20;
+			keyLight.shadow.camera.top = 20;
+			keyLight.shadow.camera.bottom = -20;
+			keyLight.shadow.camera.near = 1;
+			keyLight.shadow.camera.far = 100;
+			keyLight.shadow.radius = 6; // Higher value = softer shadow edges
 			scene.add(keyLight);
 
 			const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
@@ -40,9 +58,15 @@ import * as THREE from 'three';
 			backLight.position.set(0, 5, -5);
 			scene.add(backLight);
 
+			const bottomAmbientLight = new THREE.AmbientLight(0xaaaaaa, 0.7); // Soft neutral light
+			scene.add(bottomAmbientLight);
+
+			
 			renderer = new THREE.WebGLRenderer({ antialias: true });
 			renderer.setPixelRatio(window.devicePixelRatio);
 			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
 			document.getElementById('rightCol').appendChild(renderer.domElement); // Append the canvas to the rightCol
 
 			window.addEventListener('resize', onWindowResize);
@@ -73,37 +97,28 @@ import * as THREE from 'three';
 		// }
 
 
-
-
-
         // jQuery to change button color, text, and material of part based on the button ID
-        $(document).ready(function () {
-            console.log("Document loaded");
+		const originalMaterials = new Map(); // Store original materials
 
-            $(".btn").click(function () {
-                const buttonId = $(this).attr('id'); // Get the ID of the clicked button
-                const part = model.getObjectByName(buttonId); // Find the part by the button's ID
+		$(document).ready(function () {
+			$(".btn").click(function () {
+				const buttonId = $(this).attr("id");
+				const part = model.getObjectByName(buttonId);
 
-                if ($(this).hasClass("btn-danger")) {
-                    // If the button is in the "Incomplete" state
-                    $(this).removeClass("btn-danger").addClass("btn-success");
-                    $(this).html("Completed!");
+				if (part && !originalMaterials.has(buttonId)) {
+					originalMaterials.set(buttonId, part.material); // Store original material once
+				}
 
-                    // Change the part material to green
-                    if (part) {
-                        part.material = new THREE.MeshStandardMaterial({ color: 0x00ff00 }); // Green color
-                    }
-                } else if ($(this).hasClass("btn-success")) {
-                    // If the button is in the "Completed" state
-                    $(this).removeClass("btn-success").addClass("btn-danger");
-                    $(this).html("Incomplete");
+				const isCompleted = $(this).hasClass("btn-success");
 
-                    // Reset the part material to red (or any other color)
-                    if (part) {
-                        part.material = new THREE.MeshStandardMaterial({ color: 0xff0000 }); // Red color
-                    }
-                }
-            });
-        });
+				$(this)
+					.toggleClass("btn-danger btn-success")
+					.html(isCompleted ? "Incomplete" : "Completed!");
 
-
+				if (part) {
+					part.material = isCompleted
+						? originalMaterials.get(buttonId) // Restore original material
+						: new THREE.MeshStandardMaterial({ color: 0x00ff00 }); // Green color
+				}
+			});
+		});

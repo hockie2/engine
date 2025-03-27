@@ -74,8 +74,8 @@ import * as THREE from 'three';
 			controls = new OrbitControls(camera, renderer.domElement);
 			controls.enableDamping = true;
 			controls.autoRotate = false;
-			controls.minDistance = 0;
-			controls.maxDistance = 500;
+			controls.minDistance = 10;
+			controls.maxDistance = 15;
 			controls.update();
 		}
 

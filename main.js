@@ -18,7 +18,7 @@ import * as THREE from 'three';
 
 			// Load GLB model
             const loader = new GLTFLoader();
-            loader.load('jsm/objects/engine.glb', function (gltf) {
+            loader.load('3d/engine.glb', function (gltf) {
 				model = gltf.scene;
 				scene.add(model);
 				model.position.set(0, 0, 0);

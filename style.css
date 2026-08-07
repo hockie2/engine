@@ -14,16 +14,17 @@ body {
 }
 
 #leftCol div{
-    margin: 5px;
+    /* margin: 5px; */
 }
 
-/* ul {
+ul {
     list-style-type: none;
 }
 li {
-    padding: 5px 0;
-} */
-
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
 
 
 @media only screen and (max-width: 767px) {

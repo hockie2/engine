@@ -13,6 +13,10 @@ body {
     font-family: Arial, sans-serif;
 }
 
+#rightCol {
+    height: 100vh;
+}
+
 #leftCol div{
     /* margin: 5px; */
 }
@@ -30,5 +34,8 @@ li {
 @media only screen and (max-width: 767px) {
     ul {
         column-count: 2;
+    }
+    #rightCol {
+        height: 70vh;
     }
   }
